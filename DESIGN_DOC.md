@@ -23,7 +23,7 @@ Similarly to the other agents on the market, there are several types of operator
 
 - Output (Link to source: [isitobservable.com](https://isitobservable.io/open-telemetry/what-is-stanza-and-what-does-it-do))
 
-The stanza adapter in the [opentelemetry contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/stanza/adapter) takes care of intergrating stanza which does the conversion of logs to plog.logs format. To create the file input operator that would work with this, work has to be done to implement the stanza.LogReceiverType.
+The stanza adapter in the [opentelemetry contrib](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/stanza/adapter) takes care of intergrating stanza which does the conversion of logs to plog.logs format. To create the input operator that would work with this, work has to be done to implement the stanza.LogReceiverType.
 
 
 #### Proposed kubearmor receiver config
