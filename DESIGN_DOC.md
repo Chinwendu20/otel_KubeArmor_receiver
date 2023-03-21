@@ -2,7 +2,7 @@
 
 This receiver is created to fulfill the purpose of [adding opentelemetry support to Kubearmor](https://github.com/kubearmor/KubeArmor/issues/894). This receiver would convert the existing logs in opentelemetry to the [plog.logs format](https://github.com/open-telemetry/opentelemetry-collector/tree/main/pdata), this is the pipeline format in which logs are transported in memory in the collector.
 
-[Stanza](https://github.com/observIQ/stanza) is a fast and lightweight log transport and processing agent. It has been donated to opentelemetry. Log based components in the collector contrib ( arepository for a repository for OpenTelemetry Collector components) use stanza as an intermediary to transform logs to plog.logs. Examples include:
+[Stanza](https://github.com/observIQ/stanza) is a fast and lightweight log transport and processing agent. It has been donated to opentelemetry. Log based components in the collector contrib ( a repository for OpenTelemetry Collector components) use stanza as an intermediary to transform logs to plog.logs. Examples include:
 
 - [filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver)
 - [syslogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/syslogreceiver)
