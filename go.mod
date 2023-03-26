@@ -1,4 +1,4 @@
-module github.com/Chinwendu20/kubearmor_receiver
+module github.com/Chinwendu20/kubearmor_receiver/v0.0.1
 
 go 1.19
 
