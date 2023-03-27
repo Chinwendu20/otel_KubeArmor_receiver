@@ -59,6 +59,9 @@ func (c Config) Build(logger *zap.SugaredLogger) (operator.Operator, error) {
 	// Set Log filter option
 	args = append(args, fmt.Sprintf("--logFilter=%s", c.LogFilter))
 
+	// Set to json format
+	args = append(args, "--json")
+
 	return &Input{
 		InputOperator: inputOperator,
 		newCmd: func(ctx context.Context) cmd {
@@ -66,6 +69,7 @@ func (c Config) Build(logger *zap.SugaredLogger) (operator.Operator, error) {
 			// logClient is a an executable that is required for this operator
 			//    to function
 		},
+		json: jsoniter.ConfigFastest,
 	}, nil
 }
 
@@ -90,7 +94,6 @@ func (operator *Input) Start(_ operator.Persister) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	operator.cancel = cancel
 
-	// Start logClient
 	logClient := operator.newCmd(ctx)
 	stdout, err := logClient.StdoutPipe()
 	if err != nil {
@@ -117,7 +120,7 @@ func (operator *Input) Start(_ operator.Persister) error {
 				return
 			}
 
-			entry, err := operator.parseJournalEntry(line)
+			entry, err := operator.parseLogEntry(line)
 			if err != nil {
 				operator.Warnw("Failed to parse journal entry", zap.Error(err))
 				continue
@@ -129,7 +132,11 @@ func (operator *Input) Start(_ operator.Persister) error {
 	return nil
 }
 
-func (operator *Input) parseJournalEntry(line []byte) (*entry.Entry, error) {
+func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
+
+	if !operator.json.Valid(line) {
+		operator.Warnf("Skipping line: %s: Invalid json", string(line))
+	}
 	var body map[string]interface{}
 	err := operator.json.Unmarshal(line, &body)
 	if err != nil {
@@ -137,13 +144,15 @@ func (operator *Input) parseJournalEntry(line []byte) (*entry.Entry, error) {
 	}
 
 	timestamp, ok := body["Timestamp"]
+	//fmt.Println(int64(timestamp.(float64)))
+	//fmt.Println(string(line))
 	if !ok {
 		return nil, errors.New("log body missing timestamp field")
 	}
 
-	timestampInt, ok := timestamp.(int64)
+	timestampFloat, ok := timestamp.(float64)
 	if !ok {
-		return nil, errors.New("log body field for timestamp is not of int64 type")
+		return nil, errors.New("log body field for timestamp is not of string type")
 	}
 
 	delete(body, "Timestamp")
@@ -153,7 +162,7 @@ func (operator *Input) parseJournalEntry(line []byte) (*entry.Entry, error) {
 		return nil, fmt.Errorf("failed to create entry: %w", err)
 	}
 
-	entry.Timestamp = time.Unix(0, timestampInt*1000) // in microseconds
+	entry.Timestamp = time.Unix(0, int64(timestampFloat*1000)) // in microseconds
 	return entry, nil
 }
 

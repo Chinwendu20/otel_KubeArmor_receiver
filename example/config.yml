@@ -1,0 +1,15 @@
+receivers:
+  kubearmor_receiver:
+
+exporters:
+  file:
+    path: ./output.log
+
+service:
+  pipelines:
+    logs:
+      receivers:
+        - kubearmor_receiver
+      processors: []
+      exporters:
+        - file
