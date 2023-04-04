@@ -133,19 +133,18 @@ func (operator *Input) Start(_ operator.Persister) error {
 }
 
 func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
-
 	if !operator.json.Valid(line) {
-		operator.Warnf("Skipping line: %s: Invalid json", string(line))
+		return nil, errors.New("skipping line: invalid json")
 	}
 	var body map[string]interface{}
 	err := operator.json.Unmarshal(line, &body)
+
 	if err != nil {
 		return nil, err
 	}
 
 	timestamp, ok := body["Timestamp"]
-	//fmt.Println(int64(timestamp.(float64)))
-	//fmt.Println(string(line))
+
 	if !ok {
 		return nil, errors.New("log body missing timestamp field")
 	}
@@ -163,6 +162,7 @@ func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
 	}
 
 	entry.Timestamp = time.Unix(0, int64(timestampFloat*1000)) // in microseconds
+
 	return entry, nil
 }
 
