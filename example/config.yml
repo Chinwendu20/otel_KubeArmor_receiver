@@ -1,5 +1,7 @@
 receivers:
   kubearmor_receiver:
+    endpoint: :32767
+    logfilter: system
 
 exporters:
   file:

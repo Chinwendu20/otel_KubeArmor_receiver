@@ -43,13 +43,13 @@ func (f ReceiverType) BaseConfig(cfg component.Config) adapter.BaseConfig {
 	return cfg.(*KubearmorConfig).BaseConfig
 }
 
+// InputConfig unmarshals the input operator
+func (f ReceiverType) InputConfig(cfg component.Config) operator.Config {
+	return operator.NewConfig(&cfg.(*KubearmorConfig).InputConfig)
+}
+
 // KubearmorConfig defines configuration for the journald receiver
 type KubearmorConfig struct {
 	adapter.BaseConfig `mapstructure:",squash"`
 	InputConfig        input_operator.Config `mapstructure:",squash"`
-}
-
-// InputConfig unmarshals the input operator
-func (f ReceiverType) InputConfig(cfg component.Config) operator.Config {
-	return operator.NewConfig(&cfg.(*KubearmorConfig).InputConfig)
 }
