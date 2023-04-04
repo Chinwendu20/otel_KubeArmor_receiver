@@ -41,7 +41,7 @@ Run the command below:
 
 Note: 
 - Please replace /path/to/ocb/binary with the actual path to the ocb binary you downloaded
-- - The collector-builder.ymlfile is located in this repo at /example/collector-builder.yml. Use the actual path as the value to --config flag
+- The collector-builder.ymlfile is located in this repo at /example/collector-builder.yml. Use the actual path as the value to --config flag
 
 If everything went correctly, you should have an otel-custom folder containing an otel-custom binary. That is our collector distribution. We may proceed to testing the collector.
 
