@@ -110,7 +110,7 @@ The terminal should look like this on successfully running the collector:
 2023-03-27T11:24:22.012+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
 
 ```
-The exporter should create a log file known as output.log. The content should look like this:
+The exporter should create a log file known as /path/to/otel-custom/output.log. The content should look like this:
 
 ```log
 {"resourceLogs":[{"resource":{},"scopeLogs":[{"scope":{},"logRecords":[{"timeUnixNano":"1679915426000","observedTimeUnixNano":"1679915426487671942","body":{"kvlistValue":{"values":[{"key":"HostPID","value":{"doubleValue":261}},{"key":"PPID","value":{"doubleValue":1}},{"key":"Operation","value":{"stringValue":"File"}},{"key":"Resource","value":{"stringValue":"/var/log/journal/b09389c7d40f420982b5facb1f6e1686"}},{"key":"Data","value":{"stringValue":"syscall=SYS_OPENAT fd=-100 flags=O_RDONLY|O_NONBLOCK|O_DIRECTORY|O_CLOEXEC"}},{"key":"Result","value":{"stringValue":"Passed"}},{"key":"UpdatedTime","value":{"stringValue":"2023-03-27T11:10:26.485913Z"}},{"key":"HostName","value":{"stringValue":"babe-chinwendum"}},{"key":"PID","value":{"doubleValue":261}},{"key":"Type","value":{"stringValue":"HostLog"}},{"key":"Source","value":{"stringValue":"/usr/lib/systemd/systemd-journald"}}]}},"traceId":"","spanId":""}]}]}]}
