@@ -44,7 +44,7 @@ type Config struct {
 	LogFilter string `mapstructure:"logfilter,omitempty"`
 }
 
-// Build will build a journald input operator from the supplied configuration
+// Build will build a kubearmor input operator from the supplied configuration
 func (c Config) Build(logger *zap.SugaredLogger) (operator.Operator, error) {
 	inputOperator, err := c.InputConfig.Build(logger)
 	if err != nil {
