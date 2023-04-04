@@ -7,7 +7,12 @@ I would be explaining the two ways in which you can try out this example in both
 
 #### Requirements:
 
-- Opentelemetry collector
+Below are requirements needed for this tutorial. I would be explaining how to install them in subsequent sections.
+
+- Kubearmor log client:
+   The Log client collects the messages, alerts, and system logs from KubeArmor and stores them in the given log files (or prints them in the console). The above explanation was gotten from the [kubearmor log client's readme](https://github.com/kubearmor/kubearmor-log-client/)
+   
+- Opentelemetry collector:
 The OpenTelemetry Collector offers a vendor-agnostic implementation of how to receive, process and export telemetry data. Read more about it in the [docs](https://opentelemetry.io/docs/collector/). There are different versions:
 
 1. [Collector-core collector](https://github.com/open-telemetry/opentelemetry-collector)
