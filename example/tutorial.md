@@ -1,48 +1,72 @@
-### Introduction
+### INTRODUCTION
 
 This document describes how to test out the otel_Kubearmor_receiver. There are two ways to deploy kubearmor, on bare metal and in a kubernetes environment.
 I would be explaining the two ways in which you can try out this example in both environments.
 
-### Kubearmor on bare metal
+### KUBEAMOR ON BARE METAL
 
 #### Requirements:
 
-##### Create a custom opentelemetry collector distribution.
+- Opentelemetry collector
+The OpenTelemetry Collector offers a vendor-agnostic implementation of how to receive, process and export telemetry data. Read more about it in the [docs](https://opentelemetry.io/docs/collector/). There are different versions:
 
-The first thing to do is to create an opentelemetry collector distribution that would include the kubearmor receiver as one of its components. We would create this collector distribution using the [opentelemetry collector builder](https://opentelemetry.io/docs/collector/custom-collector/).
+1. [Collector-core collector](https://github.com/open-telemetry/opentelemetry-collector)
+   The components that are a part of this collector are fixed that i.e. components are not contributed to this collector. It is maintained by the opentelemetry community
+2. [Collector contrib collector](https://github.com/open-telemetry/opentelemetry-collector-contrib)
+    This consists of a growing number of components contributed by the community, observability vendors and any one in general with a need to create custom components for a specific use,
+4. Custom collector
 
-###### Steps:
+This is created by users for specific use case. Only needed components are included, unneeded ones are not included. Custom collectors can easily be created using the [opentelemetry collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder). This is what we would be using for our tutorial.
 
-- If you do not have the collector builder already, go to [opentelemetry collector's release page](https://github.com/open-telemetry/opentelemetry-collector/releases), download the "ocb" binary compatible with your system's architecture
+#### Steps:
+
+- **Create a custom opentelemetry collector distribution.**
+
+1. Go to [opentelemetry collector's release page](https://github.com/open-telemetry/opentelemetry-collector/releases), download the "ocb" binary compatible with your system's architecture
+
+2. Use the collector builder to create the custom collector
 
 Note: Take a look at the [collector-builder.yml](./collector-builder.yml). Note that we have included the kubearmor receiver under the receivers map.
 
-- The next step is to build our collector distribution
+Run the command below:
 
 ```bash
 /path/to/ocb/binary --config=collector-builder.yml
 
 ```
 
-Note: Please replace /path/to/ocb/binary with the actual path to the ocb binary you downloaded
+Note: 
+- Please replace /path/to/ocb/binary with the actual path to the ocb binary you downloaded
+- - The collector-builder.ymlfile is located in this repo at /example/collector-builder.yml. Use the actual path as the value to --config flag
 
 If everything went correctly, you should have an otel-custom folder containing an otel-custom binary. That is our collector distribution. We may proceed to testing the collector.
 
-#### Testing the kubearmor receiver in the collector distribution
+- **Testing the kubearmor receiver in the collector distribution**
 
 Examine the [config.yml file](./config.yml). Note that we have included the kubearmor receiver and also included it in our logging pipeline. We would also be making use of an exporter known as file exporter as it would help us see that our logs have been transformed to the opentelemetry format. Successfully running the collector proves that any opentelemetry component can now interact with the kubearmor logs. 
 
-##### Steps:
-
-- Install the kubearmor logClient
-Go to the release page and install the kubearmor log client binary suitable for your system architecture
-
-- Run the command below:
+1. Install the kubearmor logClient
+Run the command below:
 
 ```bash
-/path/to/otelcol-custom --config=config.yml
+git clone https://github.com/kubearmor/kubearmor-log-client/
+cd log-client
+go build -o logClient .
 
 ```
+2. Run the collector
+
+Run the command below:
+
+```bash
+/path/to/otel-custom --config=config.yml
+
+```
+
+Note: 
+- Please replace /path/to/otel-custom with the actual path to the otel-custom binary you downloaded
+- The config.yml file is located in this repo at /example/config.yml. Use the actual path as the value to --config flag
+
 The terminal should look like this on successfully running the collector:
 
 ```bash
