@@ -37,8 +37,8 @@ Below is an initial config.yaml for the kubearmor receiver:
 kubearmorreceiver:
   #Specifies the kubearmor relay server endpoint, this would be optional by default it would be the value of the KUBEARMOR_SERVICE or in a k8 environment, the value
   # of the kubearmor relay service endpoint
-  endpoint:https://127.0.0.1:32767 
-  # By default all of kubearmor telemetry data would be forwarded but users can modify which logs to forward by making of the options: policy,system or all
+  endpoint: https://127.0.0.1:32767 
+  # By default, all of kubearmor telemetry data would be forwarded but users can modify which logs to forward by making of the options: policy,system or all
   logfilter: all
     
 ```
