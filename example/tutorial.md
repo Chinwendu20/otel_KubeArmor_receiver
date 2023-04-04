@@ -15,8 +15,7 @@ The OpenTelemetry Collector offers a vendor-agnostic implementation of how to re
 2. [Collector contrib collector](https://github.com/open-telemetry/opentelemetry-collector-contrib)
     This consists of a growing number of components contributed by the community, observability vendors and any one in general with a need to create custom components for a specific use,
 4. Custom collector
-
-This is created by users for specific use case. Only needed components are included, unneeded ones are not included. Custom collectors can easily be created using the [opentelemetry collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder). This is what we would be using for our tutorial.
+   This is created by users for specific use case. Only needed components are included, unneeded ones are not included. Custom collectors can easily be created using the [opentelemetry collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder). This is what we would be using for our tutorial.
 
 #### Steps:
 
@@ -40,6 +39,7 @@ Note:
 - - The collector-builder.ymlfile is located in this repo at /example/collector-builder.yml. Use the actual path as the value to --config flag
 
 If everything went correctly, you should have an otel-custom folder containing an otel-custom binary. That is our collector distribution. We may proceed to testing the collector.
+
 
 - **Testing the kubearmor receiver in the collector distribution**
 
