@@ -18,6 +18,8 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/knadh/koanf v1.5.0 // indirect
+	github.com/kubearmor/KubeArmor/protobuf v0.0.0-20220128124414-a9d4b4910046 // indirect
+	github.com/kubearmor/kubearmor-log-client v0.0.0-20220131144801-96005464b9a4 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -47,3 +49,4 @@ require (
 	google.golang.org/protobuf v1.29.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
