@@ -1,9 +1,6 @@
 package kubearmor_receiver
 
 import (
-	"bytes"
-	"context"
-	"io"
 	"testing"
 	"time"
 
@@ -14,19 +11,6 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/operator"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/testutil"
 )
-
-type fakeKubearmorCmd struct{}
-
-func (f *fakeKubearmorCmd) Start() error {
-	return nil
-}
-
-func (f *fakeKubearmorCmd) StdoutPipe() (io.ReadCloser, error) {
-	response := `{"Timestamp":1680277695,"UpdatedTime":"2023-03-31T15:48:15.817142Z","HostName":"host-name","HostPID":26846,"PPID":14270,"PID":26846,"UID":1000,"Type":"HostLog","Source":"/usr/local/go/bin/go","Operation":"File","Resource":"/home/user/go/pkg/mod/cache/download/sumdb/sum.golang.org/tile/8/1/244","Data":"syscall=SYS_OPENAT fd=-100 flags=O_RDONLY|O_CLOEXEC","Result":"Passed"}
-	`
-	reader := bytes.NewReader([]byte(response))
-	return io.NopCloser(reader), nil
-}
 
 func TestInputKubearmor(t *testing.T) {
 	cfg := NewConfig()
@@ -43,10 +27,6 @@ func TestInputKubearmor(t *testing.T) {
 
 	err = op.SetOutputs([]operator.Operator{mockOutput})
 	require.NoError(t, err)
-
-	op.(*Input).newCmd = func(ctx context.Context) cmd {
-		return &fakeKubearmorCmd{}
-	}
 
 	err = op.Start(testutil.NewMockPersister("test"))
 	require.NoError(t, err)

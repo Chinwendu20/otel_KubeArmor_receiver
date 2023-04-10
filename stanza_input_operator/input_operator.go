@@ -1,8 +1,8 @@
 package kubearmor_receiver
 
 import (
-	"bufio"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
@@ -10,8 +10,7 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/operator"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/stanza/operator/helper"
 	"go.uber.org/zap"
-	"io"
-	"os/exec"
+	"os"
 	"sync"
 	"time"
 )
@@ -29,9 +28,15 @@ func NewConfig() *Config {
 
 // NewConfigWithID creates a new input config with default values
 func NewConfigWithID(operatorID string) *Config {
+	var gRPC string
+	if val, ok := os.LookupEnv("KUBEARMOR_SERVICE"); ok {
+		gRPC = val
+	} else {
+		gRPC = "localhost:32767"
+	}
 	return &Config{
 		InputConfig: helper.NewInputConfig(operatorID, operatorType),
-		Endpoint:    ":32767",
+		Endpoint:    gRPC,
 		LogFilter:   "all",
 	}
 }
@@ -45,48 +50,33 @@ type Config struct {
 }
 
 // Build will build a kubearmor input operator from the supplied configuration
-func (c Config) Build(logger *zap.SugaredLogger) (operator.Operator, error) {
-	inputOperator, err := c.InputConfig.Build(logger)
+func (cfg Config) Build(logger *zap.SugaredLogger) (operator.Operator, error) {
+	inputOperator, err := cfg.InputConfig.Build(logger)
 	if err != nil {
 		return nil, err
 	}
 
-	var args []string
-
-	// Set endpoint option
-	args = append(args, fmt.Sprintf("--gRPC=%s", c.Endpoint))
-
-	// Set Log filter option
-	args = append(args, fmt.Sprintf("--logFilter=%s", c.LogFilter))
-
-	// Set to json format
-	args = append(args, "--json")
-
+	logClient, err := NewClient(inputOperator, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create kubearmor relay client: %s", err.Error())
+	}
+	inputOperator.Logger().Infof("Created kubearmor relay client (%s)\n", cfg.Endpoint)
 	return &Input{
-		InputOperator: inputOperator,
-		newCmd: func(ctx context.Context) cmd {
-			return exec.CommandContext(ctx, "logClient", args...) // #nosec - ...
-			// logClient is a an executable that is required for this operator
-			//    to function
-		},
-		json: jsoniter.ConfigFastest,
+		InputOperator:   inputOperator,
+		json:            jsoniter.ConfigFastest,
+		Config:          cfg,
+		kubearmorClient: logClient,
 	}, nil
 }
 
-// Input is an operator that process logs using journald
+// Input is an operator that processes kubearmor logs
 type Input struct {
 	helper.InputOperator
-
-	newCmd func(ctx context.Context) cmd
-
-	json   jsoniter.API
-	cancel context.CancelFunc
-	wg     sync.WaitGroup
-}
-
-type cmd interface {
-	StdoutPipe() (io.ReadCloser, error)
-	Start() error
+	Config
+	kubearmorClient *Feeder
+	json            jsoniter.API
+	cancel          context.CancelFunc
+	wg              sync.WaitGroup
 }
 
 // Start will start generating log entries.
@@ -94,48 +84,94 @@ func (operator *Input) Start(_ operator.Persister) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	operator.cancel = cancel
 
-	logClient := operator.newCmd(ctx)
-	stdout, err := logClient.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("failed to get logClient stdout: %w", err)
+	logfilter := operator.LogFilter
+	logClient := operator.kubearmorClient
+
+	// do healthcheck
+	if ok := logClient.doHealthCheck(operator); !ok {
+		return fmt.Errorf("Failed to check the liveness of the gRPC server")
 	}
-	err = logClient.Start()
-	if err != nil {
-		return fmt.Errorf("start logClient: %w", err)
-	}
+	operator.Logger().Info("Checked the liveness of the gRPC server")
 
-	// Start the reader goroutine
-	operator.wg.Add(1)
-	go func() {
-		defer operator.wg.Done()
-
-		stdoutBuf := bufio.NewReader(stdout)
-
-		for {
-			line, err := stdoutBuf.ReadBytes('\n')
-			if err != nil {
-				if !errors.Is(err, io.EOF) {
-					operator.Errorw("Received error reading from logClient stdout", zap.Error(err))
+	if logfilter == "all" || logfilter == "kubearmorLogs" {
+		// watch messages
+		operator.wg.Add(1)
+		go func() {
+			defer operator.wg.Done()
+			for logClient.Running {
+				err, log := logClient.recvMsg(operator)
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
 				}
-				return
+				arr, _ := json.Marshal(log)
+				str := string(arr)
+				entry, err := operator.parseLogEntry([]byte(str))
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
+				}
+				operator.Write(ctx, entry)
+				operator.Logger().Info("Kubearmor logs converted to opentelemetry entry")
 			}
 
-			entry, err := operator.parseLogEntry(line)
-			if err != nil {
-				operator.Warnw("Failed to parse journal entry", zap.Error(err))
-				continue
+		}()
+
+	}
+	if logfilter == "all" || logfilter == "policy" {
+		// watch alerts
+		operator.wg.Add(1)
+		go func() {
+			defer operator.wg.Done()
+			for logClient.Running {
+				err, log := logClient.recvAlerts(operator)
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
+				}
+				arr, _ := json.Marshal(log)
+				str := string(arr)
+				entry, err := operator.parseLogEntry([]byte(str))
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
+				}
+				operator.Write(ctx, entry)
+				operator.Logger().Info("Kubearmor logs converted to opentelemetry entry")
 			}
-			operator.Write(ctx, entry)
-		}
-	}()
+
+		}()
+	}
+
+	if logfilter == "all" || logfilter == "system" {
+		// watch logs
+		operator.wg.Add(1)
+		go func() {
+			defer operator.wg.Done()
+			for logClient.Running {
+				fmt.Println(logClient.Running)
+				err, log := logClient.recvLogs(operator)
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
+				}
+				arr, _ := json.Marshal(log)
+				str := string(arr)
+				entry, err := operator.parseLogEntry([]byte(str))
+				if err != nil {
+					operator.Logger().Errorf("%s", err.Error())
+					return
+				}
+				operator.Write(ctx, entry)
+				operator.Logger().Info("Kubearmor logs converted to opentelemetry entry")
+			}
+		}()
+	}
 
 	return nil
 }
 
 func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
-	if !operator.json.Valid(line) {
-		return nil, errors.New("skipping line: invalid json")
-	}
 	var body map[string]interface{}
 	err := operator.json.Unmarshal(line, &body)
 
@@ -168,7 +204,21 @@ func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
 
 // Stop will stop generating logs.
 func (operator *Input) Stop() error {
-	operator.cancel()
+	logClient := operator.kubearmorClient
+	logClient.Running = false
+	time.Sleep(2 * time.Second)
+	if err := logClient.DestroyClient(); err != nil {
+
+		return fmt.Errorf("Failed to destroy the kubearmor relay gRPC client (%s)\n", err.Error())
+
+	} //if err := logClient.DestroyClient(); err != nil {
+	//
+	//	return fmt.Errorf("Failed to destroy the kubearmor relay gRPC client (%s)\n", err.Error())
+	//
+	//}
+	operator.Logger().Info("Destroyed kubearmor relay gRPC client")
 	operator.wg.Wait()
+	operator.cancel()
+	operator.Logger().Info("Stopped kubearmor receiver")
 	return nil
 }
