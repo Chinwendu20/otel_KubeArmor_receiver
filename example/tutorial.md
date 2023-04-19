@@ -7,19 +7,13 @@ I would be explaining the two ways in which you can try out this example in both
 
 #### Requirements:
 
-Below are requirements needed for this tutorial. I would be explaining how to install them in subsequent sections.
-
-- Kubearmor log client:
-   The Log client collects the messages, alerts, and system logs from KubeArmor and stores them in the given log files (or prints them in the console). The above explanation was gotten from the [kubearmor log client's readme](https://github.com/kubearmor/kubearmor-log-client/)
-   
-- Opentelemetry collector:
-The OpenTelemetry Collector offers a vendor-agnostic implementation of how to receive, process and export telemetry data. Read more about it in the [docs](https://opentelemetry.io/docs/collector/). There are different versions:
+We would be creating an opentelemetry collector to test out the receiver. The OpenTelemetry Collector offers a vendor-agnostic implementation of how to receive, process and export telemetry data. Read more about it in the [docs](https://opentelemetry.io/docs/collector/). There are different versions:
 
 1. [Collector-core collector](https://github.com/open-telemetry/opentelemetry-collector)
    The components that are a part of this collector are fixed that i.e. components are not contributed to this collector. It is maintained by the opentelemetry community
 2. [Collector contrib collector](https://github.com/open-telemetry/opentelemetry-collector-contrib)
     This consists of a growing number of components contributed by the community, observability vendors and any one in general with a need to create custom components for a specific use,
-4. Custom collector
+3. Custom collector
    This is created by users for specific use case. Only needed components are included, unneeded ones are not included. Custom collectors can easily be created using the [opentelemetry collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder). This is what we would be using for our tutorial.
 
 #### Steps:
@@ -48,18 +42,7 @@ If everything went correctly, you should have an otel-custom folder containing a
 
 - **Testing the kubearmor receiver in the collector distribution**
 
-Examine the [config.yml file](./config.yml). Note that we have included the kubearmor receiver and also included it in our logging pipeline. We would also be making use of an exporter known as file exporter as it would help us see that our logs have been transformed to the opentelemetry format. Successfully running the collector proves that any opentelemetry component can now interact with the kubearmor logs. 
-
-1. Install the kubearmor logClient
-Run the command below:
-
-```bash
-git clone https://github.com/kubearmor/kubearmor-log-client/
-cd log-client
-go build -o logClient .
-
-```
-2. Run the collector
+1. Run the collector
 
 Run the command below:
 
@@ -72,49 +55,6 @@ Note:
 - Please replace /path/to/otel-custom with the actual path to the otel-custom binary you downloaded
 - The config.yml file is located in this repo at /example/config.yml. Use the actual path as the value to --config flag
 
-The terminal should look like this on successfully running the collector:
-
-```bash
-
-2023-03-27T11:24:03.209+0100    info    service/telemetry.go:90 Setting up own telemetry...
-2023-03-27T11:24:03.209+0100    info    service/telemetry.go:116        Serving Prometheus metrics      {"address": ":8888", "level": "Basic"}
-2023-03-27T11:24:03.209+0100    info    exporter@v0.74.0/exporter.go:286        Development component. May change in the future.        {"kind": "exporter", "data_type": "logs", "name": "logging"}
-2023-03-27T11:24:03.211+0100    info    service/service.go:128  Starting otelcol-custom...      {"Version": "1.0.0", "NumCPU": 4}
-2023-03-27T11:24:03.211+0100    info    extensions/extensions.go:41     Starting extensions...
-2023-03-27T11:24:03.211+0100    info    adapter/receiver.go:56  Starting stanza receiver        {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs"}
-2023-03-27T11:24:03.211+0100    info    service/service.go:145  Everything is ready. Begin running and processing data.
-2023-03-27T11:24:03.215+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line: == KubeArmor information ==
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:03.215+0100    warn    grpc_input_operator/input_operator.go:128       Failed to parse journal entry   {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input", "error": "ReadMapCB: expect { or n, but found =, error found in #1 byte of ...|== KubeArmo|..., bigger context ...|== KubeArmor information ==\n|..."}
-2023-03-27T11:24:03.215+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line:   gRPC server: :32767
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:03.216+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line: Created a gRPC client (:32767)
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:03.217+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line: Checked the liveness of the gRPC server
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:03.217+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line: Started to watch alerts
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:03.217+0100    warn    grpc_input_operator/input_operator.go:141       Skipping line: Started to watch logs
-: Invalid json  {"kind": "receiver", "name": "kubearmor_receiver", "data_type": "logs", "operator_id": "kubearmor_input", "operator_type": "kubearmor_input"}
-2023-03-27T11:24:04.011+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:04.312+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 2}
-2023-03-27T11:24:06.012+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:06.911+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:08.512+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:08.612+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 2}
-2023-03-27T11:24:10.112+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 4}
-2023-03-27T11:24:11.512+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:11.911+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:12.612+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:14.612+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 3}
-2023-03-27T11:24:16.912+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:18.011+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:18.512+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-2023-03-27T11:24:20.512+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 3}
-2023-03-27T11:24:21.612+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 2}
-2023-03-27T11:24:22.012+0100    info    LogsExporter    {"kind": "exporter", "data_type": "logs", "name": "logging", "#logs": 1}
-
-```
 The exporter should create a log file known as /path/to/otel-custom/output.log. The content should look like this:
 
 ```log
@@ -137,8 +77,39 @@ For this tutorial we would be making use of the minikube kubernetes environment
 
 #### Steps:
 
-- Follow the steps in this [markdown](https://github.com/kubearmor/KubeArmor/blob/main/contribution/minikube/README.md) to deploy kubearmor in minikube environemnt
-- Run this [script](https://github.com/kubearmor/kubearmor-log-client/blob/fb128d474b77904504d8d80f91a755ad845e31e9/deployments/deploy.sh) to deploy the logClient
+- Follow the steps in this [markdown](https://github.com/kubearmor/KubeArmor/tree/main/deployments/k3s) to deploy kubearmor in k3s environemnt
+- Install opentelemetry operator. Follow these steps:
 
-======== In Progress ======================================
+1. Ensure [cert manager is installed](https://cert-manager.io/docs/installation/) in the cluster.
+2. Deploy the operator:
+
+```bash
+    kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+```
+(Reference: [Opentelemetry operator readme](https://github.com/open-telemetry/opentelemetry-operator))
+
+- Create custom collector container
+
+Note: I have created a container already and have included it in the kubernetes manifest file in this tutorial. You can skip this step if you want and use that instead.
+
+1. Build custom collector docker image. We would be using the [Dockerfile](Dockerfile) to build the image. Ensure you are in the `example` directory. Run this command:
+     ```
+     docker build . -t=<docker username>/<image name>
+     ```
+     Note: Replace `docker username ` with your docker username and `image name` with your preferred image name.
+    
+2. Push to docker hub:
+
+```
+docker push <docker username>/<image name>
+
+```
+3. Replace the container name in this [line](collector-k8-manifest.yml) with your container name.
+
+4. Deploy the collector in your cluster
+
+```bash
+kubectl apply -f collector-k8-manifest.yml
+```
+5. View the logs of the container to note that it runs fine.
 
