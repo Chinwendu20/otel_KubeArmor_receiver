@@ -3,11 +3,10 @@ kind: OpenTelemetryCollector
 metadata:
   name: simplest
 spec:
-  image: chinwendu20/otel-custom
+  image: chinwendu20/receiver
   config: |
     receivers:
       kubearmor_receiver:
-        endpoint: :32767
         logfilter: all
     
     exporters:
@@ -22,3 +21,6 @@ spec:
           processors: []
           exporters:
             - file
+  env:
+  - name: KUBEARMOR_SERVICE
+    value: kubearmor.kube-system.svc:32767
