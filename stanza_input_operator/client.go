@@ -55,7 +55,7 @@ func NewClient(operator helper.InputOperator, cfg Config) (*Feeder, error) {
 
 	msgIn := pb.RequestMessage{}
 	msgIn.Filter = ""
-	operator.Logger().Info("Destroyed kubearmor relay gRPC client")
+
 	if logFilter == "all" || logFilter == "kubearmorLogs" {
 		msgStream, err := fd.client.WatchMessages(context.Background(), &msgIn)
 		if err != nil {
@@ -97,7 +97,6 @@ func (fd *Feeder) recvMsg(operator *Input) (error, *pb.Message) {
 	if err != nil {
 		return fmt.Errorf("Failed to receive a message (%s)\n", err.Error()), nil
 	}
-	operator.Logger().Info("Received kubearmor message stream")
 	return nil, res
 }
 
@@ -106,7 +105,6 @@ func (fd *Feeder) recvAlerts(operator *Input) (error, *pb.Alert) {
 	if err != nil {
 		return fmt.Errorf("Failed to receive an alert (%s)\n", err.Error()), res
 	}
-	operator.Logger().Info("Received kubearmor alert stream")
 	return nil, res
 }
 
@@ -115,7 +113,6 @@ func (fd *Feeder) recvLogs(operator *Input) (error, *pb.Log) {
 	if err != nil {
 		return fmt.Errorf("Failed to receive an log (%s)\n", err.Error()), nil
 	}
-	operator.Logger().Info("Received kubearmor log stream")
 	return nil, res
 }
 

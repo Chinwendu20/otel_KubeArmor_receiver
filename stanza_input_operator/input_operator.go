@@ -137,7 +137,6 @@ func (operator *Input) Start(_ operator.Persister) error {
 					return
 				}
 				operator.Write(ctx, entry)
-				operator.Logger().Info("Kubearmor logs converted to opentelemetry entry")
 			}
 
 		}()
@@ -149,7 +148,6 @@ func (operator *Input) Start(_ operator.Persister) error {
 		go func() {
 			defer operator.wg.Done()
 			for logClient.Running {
-				fmt.Println(logClient.Running)
 				err, log := logClient.recvLogs(operator)
 				if err != nil {
 					operator.Logger().Errorf("%s", err.Error())
@@ -163,7 +161,6 @@ func (operator *Input) Start(_ operator.Persister) error {
 					return
 				}
 				operator.Write(ctx, entry)
-				operator.Logger().Info("Kubearmor logs converted to opentelemetry entry")
 			}
 		}()
 	}
