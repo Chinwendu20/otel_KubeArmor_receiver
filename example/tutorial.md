@@ -71,7 +71,7 @@ The exporter should create a log file known as /path/to/otel-custom/output.log. 
 
 ```
 
-### Kubearmor on kubernetes environment
+### KUBEAMOR ON KUBERNETES ENVIRONMENT
 
 For this tutorial we would be making use of the minikube kubernetes environment
 
