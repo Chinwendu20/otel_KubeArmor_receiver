@@ -43,7 +43,7 @@ kubearmorreceiver:
     
 ```
 ### Design
-![receiver](https://user-images.githubusercontent.com/59079323/228034652-21568b10-5e17-4bf1-a1dd-5ba5acb3028f.png)
+![image](https://user-images.githubusercontent.com/59079323/234896206-c223391f-f4aa-44d9-97d5-9b9b063464ab.png)
 
  
 
