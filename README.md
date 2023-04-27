@@ -15,8 +15,8 @@ KubeArmor receiver component for openTelemetry collector.
 
 ## About
 
-The openTelemetry KubeArmor receiver converts [KubeArmor](https://kubearmor.io/) telemetry data (logs, visibilty events, policy violations) to the openTelemetry format. This [adds opentelemetry support to Kubearmor](https://github.com/kubearmor/KubeArmor/issues/894)
-providing a vendor agnostic means of exporting kubearmor's telemetry data to various observability backend such as [elastic search](https://www.elastic.co/guide/en/apm/guide/current/open-telemetry-direct.html#connect-open-telemetry-collector), [grafana](https://grafana.com/docs/opentelemetry/collector/), [signoz](https://signoz.io/blog/opentelemetry-apm/) and bunch of other [opentelemetry adopters](https://github.com/open-telemetry/community/blob/main/ADOPTERS.md)!
+The openTelemetry KubeArmor receiver converts KubeArmor telemetry data (logs, visibilty events, policy violations) to the openTelemetry format. This [adds opentelemetry support to Kubearmor](https://github.com/kubearmor/KubeArmor/issues/894)
+providing a vendor agnostic means of exporting kubearmor's telemetry data to various observability backend such as [elastic search](https://www.elastic.co/guide/en/apm/guide/current/open-telemetry-direct.html#connect-open-telemetry-collector), [grafana](https://grafana.com/docs/opentelemetry/collector/), [signoz](https://signoz.io/blog/opentelemetry-apm/) and a bunch of other [opentelemetry adopters](https://github.com/open-telemetry/community/blob/main/ADOPTERS.md)!
 
 ## Documentation :notebook:
 
