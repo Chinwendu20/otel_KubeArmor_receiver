@@ -194,7 +194,7 @@ func (operator *Input) parseLogEntry(line []byte) (*entry.Entry, error) {
 		return nil, fmt.Errorf("failed to create entry: %w", err)
 	}
 
-	entry.Timestamp = time.Unix(0, int64(timestampFloat*1000)) // in microseconds
+	entry.Timestamp = time.Unix(int64(timestampFloat), 0)
 
 	return entry, nil
 }
