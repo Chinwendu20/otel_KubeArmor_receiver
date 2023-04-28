@@ -39,7 +39,14 @@ Note:
 
 If everything went correctly, you should have an otel-custom folder containing an otel-custom binary. That is our collector distribution. We may proceed to testing the collector.
 
+Note: This step is important as the binary compiled by ocb would not work in the container
+3. Create collector binary
 
+```bash
+cd otel-custom
+GO111MODULE=on CGO_ENABLED=0 go buid .
+
+```
 - **Testing the kubearmor receiver in the collector distribution**
 
 1. Run the collector
@@ -76,7 +83,7 @@ The exporter should create a log file known as /path/to/otel-custom/output.log. 
 For this tutorial we would be making use of the minikube kubernetes environment
 
 #### Steps:
-
+- Follow previous step on creating custom opentelemetry collector.
 - Follow the steps in this [markdown](https://github.com/kubearmor/KubeArmor/tree/main/deployments/k3s) to deploy kubearmor in k3s environemnt
 - Install opentelemetry operator. Follow these steps:
 

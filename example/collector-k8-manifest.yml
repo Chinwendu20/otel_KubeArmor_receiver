@@ -10,8 +10,12 @@ spec:
         logfilter: all
     
     exporters:
+      logging:
+        verbosity: detailed
       file:
         path: ./output.log
+      loki:
+        endpoint: "http://172.19.0.1:3100/loki/api/v1/push"
     
     service:
       pipelines:
@@ -20,7 +24,7 @@ spec:
             - kubearmor_receiver
           processors: []
           exporters:
-            - file
+            - loki
   env:
   - name: KUBEARMOR_SERVICE
     value: kubearmor.kube-system.svc:32767
